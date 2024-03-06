@@ -1,0 +1,223 @@
+{% extends "layout.html" %} {%from "_macros.html" import render_field%} {%block
+content %}
+<div class="container">
+  <div class="row">
+    <form
+      action="/pizza/agregar"
+      name="agregar"
+      id="agregar"
+      method="POST"
+      novalidate
+    >
+      <div class="row">
+        <div class="col-md-4">
+          <div class="row control-group">
+            <div class="form-group col-xs-12 float-label-form-group controls">
+              {{render_field(form1.nombre, class="form-control")}}
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="row control-group">
+            <div class="form-group col-xs-12 float-label-form-group controls">
+              {{render_field(form1.direccion, class="form-control")}}
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="row control-group">
+            <div class="form-group col-xs-12 float-label-form-group controls">
+              {{render_field(form1.telefono, class="form-control")}}
+            </div>
+          </div>
+        </div>
+      </div>
+      <br />
+      <div class="row">
+        <div class="col-md-4">
+          <div class="form-group">
+            Ingredientes
+            <div class="form-control">
+              <div class="d-block">{{render_field(form1.jamon)}}</div>
+              <div class="d-block">{{render_field(form1.pinia)}}</div>
+              <div class="d-block">{{render_field(form1.champinion)}}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="row control-group">
+            <div class="form-group col-xs-12 float-label-form-group controls">
+              {{render_field(form1.tamano, class="form-control",
+              style='list-style-type: none;')}}
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="row control-group">
+            <div class="form-group col-xs-12 float-label-form-group controls">
+              {{render_field(form1.num_pizzas, class="form-control")}}
+            </div>
+          </div>
+          <input type="hidden" name="csrf_token" value="{{csrf_token()}}" />
+          <p></p>
+          <input
+            type="submit"
+            class="btn btn-primary"
+            value="Agregar"
+            id="agregar"
+          />
+        </div>
+      </div>
+    </form>
+    <br />
+  </div>
+  <hr />
+  <div class="row">
+    <div class="col-md-6">
+      <div style="overflow: auto">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col">Tamaño</th>
+              <th scope="col">Ingredientes</th>
+              <th scope="col">Num. Pizzas</th>
+              <th scope="col">Sub total</th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {%for pizza in pizzas%}
+            <tr>
+              <td>*</td>
+              <td>{{pizza.tamano}}</td>
+              <td>{{pizza.ingredientes}}</td>
+              <td>{{pizza.num_pizzas}}</td>
+              <td>{{pizza.subtotal}}</td>
+              <td>
+                <form action="/pizza/eliminar" method="POST">
+                  <input type="hidden" id="id" name="id" value="{{pizza.id}}" />
+                  <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{csrf_token()}}"
+                  />
+                  <input
+                    type="submit"
+                    class="btn btn-danger"
+                    value="-"
+                    id="eliminar"
+                  />
+                </form>
+              </td>
+            </tr>
+            {%endfor%}
+          </tbody>
+        </table>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <form action="/pizza/cancelar" method="POST">
+            <input type="hidden" name="csrf_token" value="{{csrf_token()}}" />
+            <input
+              type="submit"
+              class="btn btn-warning"
+              value="Cancelar"
+              id="cancelar"
+            />
+          </form>
+        </div>
+        <div class="col-md-6">
+          <form action="/ventas/finalizar" method="POST">
+            <input type="hidden" name="csrf_token" value="{{csrf_token()}}" />
+            <input
+              type="submit"
+              class="btn btn-success"
+              value="Finalizar"
+              id="finalizar"
+            />
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="accordion accordion-flush" id="accordionFlushExample">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="flush-headingOne">
+            <button
+              class="accordion-button collapsed"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#flush-collapseOne"
+              aria-expanded="false"
+              aria-controls="flush-collapseOne"
+            >
+              {% with messages = get_flashed_messages() %} {% if messages %} {%
+              for message in messages %}
+              <div class="alert alert-success">{{ message }}</div>
+              {% endfor %} {% endif %} {% endwith %}
+            </button>
+          </h2>
+          <div
+            id="flush-collapseOne"
+            class="accordion-collapse collapse"
+            aria-labelledby="flush-headingOne"
+            data-bs-parent="#accordionFlushExample"
+          >
+            <div class="accordion-body">
+              <table class="table table-triped table-bordered">
+                <tbody>
+                  {%for venta in ventas%}
+                  <tr>
+                    <td>{{venta.nombre}} Total: ${{venta.total}}</td>
+                  </tr>
+                  {%endfor%}
+                </tbody>
+              </table>
+              <form
+                action="/ventas/buscar"
+                name="venta"
+                id="venta"
+                method="POST"
+                novalidate
+              >
+                <input
+                  type="hidden"
+                  name="csrf_token"
+                  value="{{csrf_token()}}"
+                />
+                <div class="row">
+                  <div class="col-md-4">
+                    {{render_field(form3.dia, class="form-control")}}
+                  </div>
+                  <div class="col-md-4">
+                    {{render_field(form3.mes, class="form-control")}}
+                  </div>
+                  <div class="col-md-4">
+                    {{render_field(form3.anio, class="form-control")}}
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    {{render_field(form3.formato, class="form-control",
+                    style='list-style-type: none;')}}
+                  </div>
+                  <div class="col-md-6">
+                    <br />
+                    <input
+                      type="submit"
+                      class="btn btn-secondary"
+                      value="Buscar ventas"
+                      id="buscar"
+                    />
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{%endblock%}

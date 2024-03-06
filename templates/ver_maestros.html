@@ -4,6 +4,10 @@
 <div class="container">
     <div class="row">
         <h3>Maestros</h3>
+        <form action="/insertar/maestros">
+            <input type="submit" value="Agregar" class="btn btn-success">
+        </form>
+        
         <table class="table table-triped table-bordered">
             <thead>
                 <tr>
@@ -24,8 +28,8 @@
                     <td>{{maestro.amaterno}}</td>
                     <td>{{maestro.telefono}}</td>
                     <td>{{maestro.email}}</td>
-                    <td><a href="/eliminar.html?id={{maestro.id}}" class="btn btn-danger">Eliminar</a></td>
-                    <td><a href="/modificar.html?id={{maestro.id}}"  class="btn btn-warning">Modificar</a></td>
+                    <td><a href="/eliminar/maestro?id={{maestro.id}}" class="btn btn-danger">Eliminar</a></td>
+                    <td><a href="/modificar/maestro?id={{maestro.id}}"  class="btn btn-warning">Modificar</a></td>
                 </tr>
                 {%endfor%}
             </tbody>

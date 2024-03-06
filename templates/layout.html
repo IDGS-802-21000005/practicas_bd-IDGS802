@@ -5,10 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <link rel="stylesheet" href="../static/bootstrap/css/bootstrap.min.css" />
-    <link
-      rel="stylesheet"
-      href="../static/bootstrap/css/bootstrap-responsive.min.css"
-    />
 
     <script src="../static/bootstrap/js/bootstrap.min.js"></script>
   </head>
@@ -25,10 +21,7 @@
               <a class="nav-link" href="#">Inicio</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">Usuarios</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Alumnos</a>
+              <a class="nav-link" href="/">Pizza</a>
             </li>
           </ul>
         </div>
@@ -39,21 +32,15 @@
         background-color: white;
         color: #2f2f2f;
         display: grid;
-        align-content: center;
+        align-content: flex-start;
         justify-content: center;
+        margin-top: 20px;
         min-height: 90vh;
         width: 100vw;
       "
     >
-      <div class="container" style="min-width: 50vw;">
-        {% with messages = get_flashed_messages() %} 
-          {% if messages %} 
-            {% for
-            message in messages %}
-            <div class="alert alert-success">{{ message }}</div>
-            {% endfor %} 
-          {% endif %} 
-        {% endwith %} 
+      <div class="container" style="min-width: 70vw;">
+        
 
         {% block content %} 
         {% endblock %}
