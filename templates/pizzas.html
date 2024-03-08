@@ -11,30 +11,6 @@ content %}
     >
       <div class="row">
         <div class="col-md-4">
-          <div class="row control-group">
-            <div class="form-group col-xs-12 float-label-form-group controls">
-              {{render_field(form1.nombre, class="form-control")}}
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="row control-group">
-            <div class="form-group col-xs-12 float-label-form-group controls">
-              {{render_field(form1.direccion, class="form-control")}}
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="row control-group">
-            <div class="form-group col-xs-12 float-label-form-group controls">
-              {{render_field(form1.telefono, class="form-control")}}
-            </div>
-          </div>
-        </div>
-      </div>
-      <br />
-      <div class="row">
-        <div class="col-md-4">
           <div class="form-group">
             Ingredientes
             <div class="form-control">
@@ -65,6 +41,7 @@ content %}
             class="btn btn-primary"
             value="Agregar"
             id="agregar"
+            style="width: 100%"
           />
         </div>
       </div>
@@ -74,6 +51,31 @@ content %}
   <hr />
   <div class="row">
     <div class="col-md-6">
+      <div class="row">
+        <div class="col-md-6">
+          <form action="/pizza/cancelar" method="POST">
+            <input type="hidden" name="csrf_token" value="{{csrf_token()}}" />
+            <input
+              type="submit"
+              class="btn btn-warning"
+              value="Cancelar"
+              id="cancelar"
+              style="width: 100%"
+            />
+          </form>
+        </div>
+        <div class="col-md-6">
+          <button
+            class="btn btn-success"
+            type="button"
+            data-bs-toggle="modal"
+            data-bs-target="#confirmacionModal"
+            style="width: 100%"
+          >
+            Finalizar
+          </button>
+        </div>
+      </div>
       <div style="overflow: auto">
         <table class="table">
           <thead>
@@ -115,65 +117,45 @@ content %}
           </tbody>
         </table>
       </div>
-      <div class="row">
-        <div class="col-md-6">
-          <form action="/pizza/cancelar" method="POST">
-            <input type="hidden" name="csrf_token" value="{{csrf_token()}}" />
-            <input
-              type="submit"
-              class="btn btn-warning"
-              value="Cancelar"
-              id="cancelar"
-            />
-          </form>
-        </div>
-        <div class="col-md-6">
-          <form action="/ventas/finalizar" method="POST">
-            <input type="hidden" name="csrf_token" value="{{csrf_token()}}" />
-            <input
-              type="submit"
-              class="btn btn-success"
-              value="Finalizar"
-              id="finalizar"
-            />
-          </form>
-        </div>
-      </div>
     </div>
     <div class="col-md-6">
       <div class="accordion accordion-flush" id="accordionFlushExample">
         <div class="accordion-item">
           <h2 class="accordion-header" id="flush-headingOne">
             <button
-              class="accordion-button collapsed"
+              class="accordion-button"
               type="button"
               data-bs-toggle="collapse"
               data-bs-target="#flush-collapseOne"
-              aria-expanded="false"
+              aria-expanded="true"
               aria-controls="flush-collapseOne"
             >
               {% with messages = get_flashed_messages() %} {% if messages %} {%
               for message in messages %}
-              <div class="alert alert-success">{{ message }}</div>
+              <div class="alert alert-success" style="width: 90%;">{{ message }}</div>
               {% endfor %} {% endif %} {% endwith %}
             </button>
           </h2>
           <div
             id="flush-collapseOne"
-            class="accordion-collapse collapse"
+            class="accordion-collapse collapse show"
             aria-labelledby="flush-headingOne"
             data-bs-parent="#accordionFlushExample"
           >
             <div class="accordion-body">
-              <table class="table table-triped table-bordered">
-                <tbody>
-                  {%for venta in ventas%}
-                  <tr>
-                    <td>{{venta.nombre}} Total: ${{venta.total}}</td>
-                  </tr>
-                  {%endfor%}
-                </tbody>
-              </table>
+              <div style="max-height: 30vh; overflow: auto">
+                <table class="table table-triped table-bordered">
+                  <tbody>
+                    {%for venta in ventas%}
+                    <tr>
+                      <td>
+                        Cliente: {{venta.nombre}} | Total: ${{venta.total}}
+                      </td>
+                    </tr>
+                    {%endfor%}
+                  </tbody>
+                </table>
+              </div>
               <form
                 action="/ventas/buscar"
                 name="venta"
@@ -198,17 +180,21 @@ content %}
                   </div>
                 </div>
                 <div class="row">
-                  <div class="col-md-6">
+                  <div class="col-md-4">
                     {{render_field(form3.formato, class="form-control",
                     style='list-style-type: none;')}}
                   </div>
-                  <div class="col-md-6">
+                  <div class="col-md-4">
+                    {{render_field(form3.dow, class="form-control")}}
+                  </div>
+                  <div class="col-md-4">
                     <br />
                     <input
                       type="submit"
                       class="btn btn-secondary"
                       value="Buscar ventas"
                       id="buscar"
+                      style="width: 100%"
                     />
                   </div>
                 </div>
@@ -216,6 +202,109 @@ content %}
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+  <!-- Modal -->
+  <div
+    class="modal fade"
+    id="confirmacionModal"
+    tabindex="-1"
+    aria-labelledby="confirmacionModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmacionModalLabel">
+            Confirmar venta
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <form action="/ventas/finalizar" method="POST">
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-md-4">
+                <div class="row control-group">
+                  <div
+                    class="form-group col-xs-12 float-label-form-group controls"
+                  >
+                    {{render_field(form2.nombre, class="form-control")}}
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="row control-group">
+                  <div
+                    class="form-group col-xs-12 float-label-form-group controls"
+                  >
+                    {{render_field(form2.direccion, class="form-control")}}
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="row control-group">
+                  <div
+                    class="form-group col-xs-12 float-label-form-group controls"
+                  >
+                    {{render_field(form2.telefono, class="form-control")}}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                  <div class="row control-group">
+                    <div
+                      class="form-group col-xs-12 float-label-form-group controls"
+                    >
+                      {{render_field(form2.dia, class="form-control")}}
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="row control-group">
+                    <div
+                      class="form-group col-xs-12 float-label-form-group controls"
+                    >
+                      {{render_field(form2.mes, class="form-control")}}
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="row control-group">
+                    <div
+                      class="form-group col-xs-12 float-label-form-group controls"
+                    >
+                      {{render_field(form2.anio, class="form-control")}}
+                    </div>
+                  </div>
+                </div>
+              </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Regresar
+            </button>
+            <input type="hidden" name="csrf_token" value="{{csrf_token()}}" />
+            <input
+              type="submit"
+              class="btn btn-success"
+              value="Confirmar venta"
+              id="finalizar"
+              style="width: 100%"
+            />
+          </div>
+        </form>
       </div>
     </div>
   </div>

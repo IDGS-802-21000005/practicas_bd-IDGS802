@@ -1,10 +1,9 @@
 class PizzaManager:
     def __init__(self):
         self.pizzas = []
-        self.client = {}
         self.next_id = 1
 
-    def agregar_pizza(self, nombre, direccion, telefono, ingredientes, tamaño, num):
+    def agregar_pizza(self, ingredientes, tamaño, num):
         
         subtotal = 0
         # Asignar precios base según el tamaño
@@ -35,11 +34,7 @@ class PizzaManager:
             "num_pizzas": num,
             'subtotal': subtotal
         }
-        self.client = {
-            "nombre":nombre,
-            "direccion":direccion,
-            "telefono":telefono
-        }
+        
         self.pizzas.append(pizza)
         self.next_id += 1
 

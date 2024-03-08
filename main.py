@@ -12,17 +12,19 @@ app = Flask(__name__)
 app.config.from_object(DevelopmentConfig)
 csrf=CSRFProtect()
 
+from sqlalchemy import extract,text
 from datetime import datetime, timedelta
 from pizzas import PizzaManager
 
 @app.route("/", methods=["GET","POST"])
 def index():
     pizza_form=forms.PizzaForm(request.form)
+    pizza_form2=forms.ConfirmacionForm(request.form)
     pizza_form3=forms.VentaForm(request.form)
     ventas=Venta.query.filter(Venta.fecha.cast(db.Date) == datetime.now().date()).all()
     pizzas = pizza_manager.obtener_pizzas()
     flash("Ventas de hoy")
-    return render_template("pizzas.html",  form1=pizza_form, form3=pizza_form3, pizzas=pizzas, ventas=ventas)
+    return render_template("pizzas.html",  form1=pizza_form, form2=pizza_form2, form3=pizza_form3, pizzas=pizzas, ventas=ventas)
 
 @app.route("/insertar/alumnos", methods=["GET","POST"])
 def alumnos():
@@ -106,13 +108,10 @@ pizza_manager = PizzaManager()
 def pizza_agregar():
     
     pizza_form=forms.PizzaForm(request.form)
+    pizza_form2=forms.ConfirmacionForm(request.form)
     pizza_form3=forms.VentaForm(request.form)
     
     if request.method == "POST" and pizza_form.validate():
-        nombre=pizza_form.nombre.data
-        direccion=pizza_form.direccion.data
-        telefono=pizza_form.telefono.data
-        
         num_pizzas=pizza_form.num_pizzas.data
         champinion=pizza_form.champinion.data
         champinion=("Champiñones" if champinion else "")
@@ -124,11 +123,11 @@ def pizza_agregar():
         
         ingredientes = ','.join([ingrediente for ingrediente in [champinion, pinia, jamon] if ingrediente])
         
-        pizza_manager.agregar_pizza(nombre,direccion,telefono,ingredientes, tamano, num_pizzas)
+        pizza_manager.agregar_pizza(ingredientes, tamano, num_pizzas)
     ventas=Venta.query.filter(Venta.fecha.cast(db.Date) == datetime.now().date()).all()
     pizzas = pizza_manager.obtener_pizzas()
     flash("Ventas de hoy")
-    return render_template("pizzas.html",  form1=pizza_form, form3=pizza_form3, pizzas=pizzas, ventas=ventas)
+    return render_template("pizzas.html",  form1=pizza_form, form2=pizza_form2, form3=pizza_form3, pizzas=pizzas, ventas=ventas)
 
 @app.route("/pizza/eliminar",methods=["GET","POST"])
 def pizza_eliminar():
@@ -149,15 +148,21 @@ def pizza_cancelar():
 @app.route("/ventas/finalizar",methods=["GET","POST"])
 def ventas_finalizar():
     pizza_form=forms.PizzaForm(request.form)
+    pizza_form2=forms.ConfirmacionForm(request.form)
     pizza_form3=forms.VentaForm(request.form)
 
-    if request.method == "POST":
-        
-        cliente = pizza_manager.obtener_cliente()
+    if request.method == "POST" and pizza_form2.validate():
+        nombre=pizza_form2.nombre.data
+        direccion=pizza_form2.direccion.data
+        telefono=pizza_form2.telefono.data
+        dia=pizza_form3.dia.data
+        mes=pizza_form3.mes.data
+        anio=pizza_form3.anio.data
+        fecha_venta = datetime(int(anio), int(mes), int(dia))
         
         total = pizza_manager.total()
         
-        venta = Venta(nombre=cliente["nombre"], direccion=cliente["direccion"], telefono=cliente["telefono"], fecha=datetime.now(), total=total)
+        venta = Venta(nombre=nombre, direccion=direccion, telefono=telefono, fecha=fecha_venta, total=total)
                     
         db.session.add(venta)
         db.session.commit()
@@ -165,11 +170,12 @@ def ventas_finalizar():
     pizzas = pizza_manager.obtener_pizzas()
     ventas=Venta.query.filter(Venta.fecha.cast(db.Date) == datetime.now().date()).all()
     flash("Ventas de hoy")
-    return render_template("pizzas.html",  form1=pizza_form, form3=pizza_form3, pizzas=pizzas, ventas=ventas)
+    return render_template("pizzas.html",  form1=pizza_form, form2=pizza_form2, form3=pizza_form3, pizzas=pizzas, ventas=ventas)
 
 @app.route("/ventas/buscar",methods=["GET","POST"])
 def ventas_buscar():
     pizza_form=forms.PizzaForm(request.form)
+    pizza_form2=forms.ConfirmacionForm(request.form)
     pizza_form3=forms.VentaForm(request.form)
     
     if request.method == "POST" and pizza_form3.validate():
@@ -177,26 +183,35 @@ def ventas_buscar():
         mes=pizza_form3.mes.data
         anio=pizza_form3.anio.data
         formato=pizza_form3.formato.data
+        dow=pizza_form3.dow.data
         ventas = []
-        if formato == 'd':
-            ventas=Venta.query.filter(Venta.fecha.cast(db.Date) == datetime(int(anio),int(mes),int(dia))).all()
-            flash(f"Ventas de {dia}/{mes}/{anio}")
-        elif formato == 'm':
-            fecha_inicio = datetime(year=int(anio), month=int(mes), day=1)
-            # Calcular el último día del mes
-            fecha_fin = datetime(year=int(anio), month=int(mes)+1, day=1) - timedelta(days=1)
-            
-            # Filtrar las ventas por el rango de fechas
-            ventas = Venta.query.filter(Venta.fecha >= fecha_inicio, Venta.fecha <= fecha_fin).all()
-            flash(f"Ventas de {mes}/{anio}")
+        if int(dow) < 1:
+        
+            if formato == 'd':
+                
+                ventas=Venta.query.filter(Venta.fecha.cast(db.Date) == datetime(int(anio),int(mes),int(dia))).all()
+                
+                flash(f"Ventas de {dia}/{mes}/{anio}")
+            elif formato == 'm':
+                fecha_inicio = datetime(year=int(anio), month=int(mes), day=1)
+                # Calcular el último día del mes
+                fecha_fin = datetime(year=int(anio), month=int(mes)+1, day=1) - timedelta(days=1)
+                
+                # Filtrar las ventas por el rango de fechas
+                ventas = Venta.query.filter(Venta.fecha >= fecha_inicio, Venta.fecha <= fecha_fin).all()
+                flash(f"Ventas de {mes}/{anio}")
+        else:
+            ventas = Venta.query.filter(text("DAYOFWEEK(fecha) = :dow")).params(dow=dow).all()
+            dowdia= {2:'Lunes',3:'Martes',4:'Miércoles',5:'Jueves',6:'Viernes',7:'Sábado',1:'Domingo'}[int(dow)]   
+            flash(f"Ventas de dia {dowdia}")
         
         pizzas = pizza_manager.obtener_pizzas()
-        return render_template("pizzas.html",  form1=pizza_form, form3=pizza_form3, pizzas=pizzas, ventas=ventas)
+        return render_template("pizzas.html",  form1=pizza_form, form2=pizza_form2, form3=pizza_form3, pizzas=pizzas, ventas=ventas)
     
     ventas=Venta.query.filter(Venta.fecha.cast(db.Date) == datetime.now().date()).all()
     flash("Ventas de hoy")
     pizzas = pizza_manager.obtener_pizzas()
-    return render_template("pizzas.html",  form1=pizza_form, form3=pizza_form3, pizzas=pizzas, ventas=ventas)
+    return render_template("pizzas.html",  form1=pizza_form, form2=pizza_form2, form3=pizza_form3, pizzas=pizzas, ventas=ventas)
  
 @app.errorhandler(404)
 def page_not_found(e):
